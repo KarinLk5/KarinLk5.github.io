@@ -1,272 +1,108 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>重要事务管理 | 提醒助手</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  
-  <!-- 主题配置 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#165DFF',
-            secondary: '#7B61FF',
-            light: '#F5F7FF',
-            dark: '#1D2129',
-          },
-          fontFamily: {
-            inter: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
-      }
-    }
-  </script>
-  
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .content-auto {
-        content-visibility: auto;
-      }
-      .task-card {
-        @apply bg-white rounded-xl p-4 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md;
-      }
-      .btn-primary {
-        @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-all;
-      }
-      .btn-secondary {
-        @apply bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-all;
-      }
-      .input-style {
-        @apply w-full border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-1 focus:ring-primary;
-      }
-      .scroll-smooth {
-        scroll-behavior: smooth;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重要事务记录与闹钟提醒</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1>重要事务记录与闹钟提醒</h1>
+            <p>高效、清晰地管理您的关键任务</p>
+        </header>
 
-<body class="bg-light font-inter text-dark min-h-screen flex flex-col">
-  <!-- 顶部导航 -->
-  <header class="sticky top-0 bg-white shadow-sm z-50">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <i class="fa fa-bell-o text-primary text-2xl"></i>
-        <h1 class="text-xl font-bold text-primary">重要事务提醒</h1>
-      </div>
-      <div class="flex gap-3">
-        <button id="clearAll" class="text-sm px-3 py-1 border border-red-400 text-red-500 rounded-lg hover:bg-red-50">
-          <i class="fa fa-trash-o mr-1"></i>清空
-        </button>
-        <button id="addTaskBtn" class="btn-primary">
-          <i class="fa fa-plus mr-1"></i>新建事务
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- 主内容区 -->
-  <main class="flex-grow container mx-auto px-4 py-6">
-    <!-- 统计面板 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <p class="text-gray-500 text-sm">总事务数</p>
-        <p id="totalCount" class="text-2xl font-bold text-primary">0</p>
-      </div>
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <p class="text-gray-500 text-sm">待处理</p>
-        <p id="pendingCount" class="text-2xl font-bold text-secondary">0</p>
-      </div>
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <p class="text-gray-500 text-sm">已完成</p>
-        <p id="doneCount" class="text-2xl font-bold text-green-600">0</p>
-      </div>
-    </div>
-
-    <!-- 新建任务表单（默认隐藏） -->
-    <div id="taskForm" class="hidden task-card mb-6">
-      <h2 class="text-lg font-semibold mb-4">添加重要事务</h2>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">事务标题</label>
-          <input id="title" type="text" class="input-style" placeholder="请输入重要事务名称">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">详细描述</label>
-          <textarea id="desc" rows="2" class="input-style" placeholder="补充说明（可选）"></textarea>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">提醒日期</label>
-            <input id="date" type="date" class="input-style">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">提醒时间</label>
-            <input id="time" type="time" class="input-style">
-          </div>
-        </div>
-        <div class="flex justify-end gap-3">
-          <button id="cancelForm" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">取消</button>
-          <button id="saveTask" class="btn-secondary">保存并提醒</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 任务列表 -->
-    <div>
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold">事务列表</h2>
-        <div class="text-sm text-gray-500"><span id="currentTime"></span></div>
-      </div>
-      <div id="taskList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-  </main>
-
-  <!-- 页脚 -->
-  <footer class="bg-white py-4 text-center text-gray-500 text-sm border-t">
-    <p>本地事务提醒助手 | 所有数据仅保存在本地浏览器中</p>
-  </footer>
-
-  <!-- 提示音（隐藏） -->
-  <audio id="alertSound" preload="auto">
-    <source src="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3" type="audio/mpeg">
-  
-
-  <script>
-    // 工具：格式化时间
-    const formatTime = (date) => new Date(date).toLocaleString('zh-CN');
-    const now = new Date();
-    document.getElementById('currentTime').innerText = `当前时间：${now.toLocaleString('zh-CN')}`;
-
-    // 读取/保存本地任务
-    const getTasks = () => JSON.parse(localStorage.getItem('importantTasks') || '[]');
-    const saveTasks = (tasks) => localStorage.setItem('importantTasks', JSON.stringify(tasks));
-
-    // 渲染统计
-    function renderStats() {
-      const tasks = getTasks();
-      document.getElementById('totalCount').innerText = tasks.length;
-      document.getElementById('pendingCount').innerText = tasks.filter(t => !t.done).length;
-      document.getElementById('doneCount').innerText = tasks.filter(t => t.done).length;
-    }
-
-    // 渲染任务列表
-    function renderTasks() {
-      const list = document.getElementById('taskList');
-      const tasks = getTasks().sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
-      list.innerHTML = '';
-
-      if (tasks.length === 0) {
-        list.innerHTML = `
-          <div class="col-span-full bg-white rounded-xl p-8 text-center text-gray-400">
-            <i class="fa fa-inbox text-4xl mb-2"></i>
-            <p>暂无重要事务，点击右上角「新建事务」添加</p>
-          </div>
-        `;
-        return;
-      }
-
-      tasks.forEach((task, index) => {
-        const taskTime = new Date(task.datetime);
-        const isExpired = taskTime < now && !task.done;
-        const card = document.createElement('div');
-        card.className = `task-card ${task.done ? 'border-l-4 border-green-500 opacity-80' : ''} 
-                           ${isExpired && !task.done ? 'border-l-4 border-red-500' : ''}`;
-        
-        card.innerHTML = `
-          <div class="flex justify-between items-start mb-2">
-            <h3 class="font-semibold ${task.done ? 'line-through text-gray-500' : 'text-dark'}">${task.title}</h3>
-            <div class="flex gap-1">
-              <button data-index="${index}" class="done-btn text-xs p-1 rounded ${task.done ? 'text-green-600' : 'text-gray-400 hover:text-green-600'}">
-                <i class="fa ${task.done ? 'fa-check-circle' : 'fa-circle-o'}"></i>
-              </button>
-              <button data-index="${index}" class="del-btn text-xs p-1 rounded text-gray-400 hover:text-red-500">
-                <i class="fa fa-times"></i>
-              </button>
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-tasks"></i>
+                <h3 id="total-tasks">0</h3>
+                <p>总任务数</p>
             </div>
-          </div>
-          <p class="text-sm text-gray-600 mb-3">${task.desc || '无描述'}</p>
-          <div class="text-xs text-gray-500 flex justify-between items-center">
-            <span><i class="fa fa-clock-o mr-1"></i>${taskTime.toLocaleString('zh-CN')}</span>
-            ${isExpired && !task.done ? '<span class="text-red-500 font-medium">已到期</span>' : ''}
-          </div>
-        `;
-        list.appendChild(card);
-      });
+            <div class="stat-card success">
+                <i class="fas fa-check-circle"></i>
+                <h3 id="completed-tasks">0</h3>
+                <p>已完成任务</p>
+            </div>
+            <div class="stat-card warning">
+                <i class="fas fa-clock"></i>
+                <h3 id="active-reminders">0</h3>
+                <p>活跃提醒</p>
+            </div>
+            <div class="stat-card purple">
+                <i class="fas fa-calendar-check"></i>
+                <h3 id="today-tasks">0</h3>
+                <p>今日任务</p>
+            </div>
+        </div>
 
-      // 绑定事件
-      document.querySelectorAll('.done-btn').forEach(btn => {
-        btn.addEventListener('click', () => toggleDone(btn.dataset.index));
-      });
-      document.querySelectorAll('.del-btn').forEach(btn => {
-        btn.addEventListener('click', () => deleteTask(btn.dataset.index));
-      });
-    }
+        <div class="main-content">
+            <div class="card">
+                <h2><i class="fas fa-plus-circle"></i>添加新任务</h2>
+                <form id="task-form">
+                    <div class="form-group">
+                        <label for="task-title">任务标题</label>
+                        <input type="text" id="task-title" placeholder="输入任务标题" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-description">任务描述</label>
+                        <textarea id="task-description" placeholder="输入任务描述"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-date">截止日期</label>
+                        <input type="date" id="task-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="task-priority">优先级</label>
+                        <select id="task-priority">
+                            <option value="low">低</option>
+                            <option value="medium" selected>中</option>
+                            <option value="high">高</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">添加任务</button>
+                </form>
+            </div>
 
-    // 新建/取消表单
-    const taskForm = document.getElementById('taskForm');
-    document.getElementById('addTaskBtn').addEventListener('click', () => taskForm.classList.remove('hidden'));
-    document.getElementById('cancelForm').addEventListener('click', () => {
-      taskForm.classList.add('hidden');
-      document.getElementById('title').value = '';
-      document.getElementById('desc').value = '';
-    });
+            <div class="card">
+                <h2><i class="fas fa-bell"></i>设置提醒</h2>
+                <form id="reminder-form">
+                    <div class="form-group">
+                        <label for="reminder-title">提醒标题</label>
+                        <input type="text" id="reminder-title" placeholder="输入提醒标题" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reminder-time">提醒时间</label>
+                        <input type="datetime-local" id="reminder-time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reminder-message">提醒内容</label>
+                        <textarea id="reminder-message" placeholder="输入提醒内容"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">设置提醒</button>
+                </form>
+            </div>
 
-    // 保存任务
-    document.getElementById('saveTask').addEventListener('click', () => {
-      const title = document.getElementById('title').value.trim();
-      const desc = document.getElementById('desc').value.trim();
-      const date = document.getElementById('date').value;
-      const time = document.getElementById('time').value;
-      
-      if (!title || !date || !time) {
-        alert('请填写标题、日期和时间');
-        return;
-      }
+            <div class="card">
+                <h2><i class="fas fa-list-check"></i>任务列表</h2>
+                <div class="task-list" id="task-list">
+                    <p style="text-align: center; color: var(--gray-dark); padding: 20px;">暂无任务，添加一个新任务吧！</p>
+                </div>
+            </div>
 
-      const datetime = `${date}T${time}`;
-      const tasks = getTasks();
-      tasks.push({ title, desc, datetime, done: false });
-      saveTasks(tasks);
-      
-      taskForm.classList.add('hidden');
-      document.getElementById('title').value = '';
-      document.getElementById('desc').value = '';
-      
-      renderTasks();
-      renderStats();
-      startAlarmCheck();
-    });
+            <div class="card">
+                <h2><i class="fas fa-bell"></i>提醒列表</h2>
+                <div class="reminder-list" id="reminder-list">
+                    <p style="text-align: center; color: var(--gray-dark); padding: 20px;">暂无提醒，设置一个新提醒吧！</p>
+                </div>
+            </div>
+        </div>
 
-    // 切换完成状态
-    function toggleDone(index) {
-      const tasks = getTasks();
-      tasks[index].done = !tasks[index].done;
-      saveTasks(tasks);
-      renderTasks();
-      renderStats();
-    }
-
-    // 删除任务
-    function deleteTask(index) {
-      if (!confirm('确定删除此事务？')) return;
-      const tasks = getTasks();
-      tasks.splice(index, 1);
-      saveTasks(tasks);
-      renderTasks();
-      renderStats();
-    }
-
-    // 清空所有
-    document.getElementById('clearAll').addEventListener('click', () => {
-      if (!confirm('确定清空所有事务？此操作不可恢复！')) return;
-      localStorage.removeItem('importantTasks');
-      renderTasks();
-      renderStats();
-    });
-
-    // 闹钟提醒轮询
+        <footer class="footer">
+            <p>© 2026 重要事务记录与闹钟提醒 - 高效管理您的时间</p>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
